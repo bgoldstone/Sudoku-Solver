@@ -40,11 +40,13 @@ func solve(sudoku Sudoku) Sudoku {
 				return solve(sudoku)
 			}
 		}
-		if sudoku.board[xCoord][yCoord] == 0 && len(visited) > 2 {
-			coord := visited[len(visited)-2]
-			sudoku.board[coord[0]][coord[1]] = 0
-			visited = visited[:len(visited)-2]
-			return solve(sudoku)
+		if sudoku.board[xCoord][yCoord] == 0 {
+			if len(visited) > 2 {
+				coord := visited[len(visited)-2]
+				sudoku.board[coord[0]][coord[1]] = 0
+				visited = visited[:len(visited)-2]
+			}
+			return sudoku
 		}
 	}
 	findEmpty := findEmptyBox(sudoku)

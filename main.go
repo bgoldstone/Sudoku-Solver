@@ -1,12 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 //col(y) start,end, row(x) start,end
 var boxes = [9][4]int{{0, 2, 0, 2}, {0, 2, 3, 5}, {0, 2, 6, 8}, {3, 5, 0, 2}, {3, 5, 3, 5}, {3, 5, 6, 8}, {6, 8, 0, 2}, {6, 8, 3, 5}, {6, 8, 6, 8}}
-var visited [][]int
 
 func main() {
+	//initialize board
 	var board [9][9]int
 	board = [9][9]int{
 		{3, 5, 0, 6, 0, 2, 0, 0, 4},
@@ -19,63 +22,71 @@ func main() {
 		{8, 0, 0, 7, 0, 3, 0, 0, 0},
 		{0, 0, 4, 0, 2, 0, 0, 0, 1},
 	}
+	//gets solution
+	sudoku(board)
+}
+func sudoku(board [9][9]int) {
+	//Prints initial board
+	printBoard(board, "Initial Board")
+	// creates an instance of a sudoku struct
 	sudoku := Sudoku{board, boxes}
-	for _, v := range solve(sudoku).board {
-		fmt.Println(v)
-	}
+	//prints sudoku board after solving
+	solvedBoard := solve(sudoku).board
+	printBoard(solvedBoard, "Solved Board")
 }
 
+//solves sudoku board using a Sudoku struct
 func solve(sudoku Sudoku) Sudoku {
-	coords := findEmptyBox(sudoku)
-	xCoord := coords[0]
-	yCoord := coords[1]
+	//finds coordinates of empty box
+	xCoord, yCoord := findEmptyBox(sudoku)
+	//if not empty coordinates, it solved sudoku.
 	if xCoord == -1 && yCoord == -1 {
 		return sudoku
 	}
-	if sudoku.board[xCoord][yCoord] == 0 {
-		for k := 1; k <= 9; k++ {
-			if checkConditions(sudoku, xCoord, yCoord, k) {
-				sudoku.board[xCoord][yCoord] = k
-				visited = append(visited, []int{xCoord, yCoord})
-				return solve(sudoku)
+	//for 1-9, check if that is a valid move
+	for k := 1; k <= 9; k++ {
+		if validMove(sudoku, xCoord, yCoord, k) {
+			sudoku.board[xCoord][yCoord] = k
+			solved := solve(sudoku)
+			if isSolved(solved) {
+				return solved
+			} else {
+				continue
 			}
 		}
-		if sudoku.board[xCoord][yCoord] == 0 {
-			if len(visited) > 2 {
-				coord := visited[len(visited)-2]
-				sudoku.board[coord[0]][coord[1]] = 0
-				visited = visited[:len(visited)-2]
-			}
-			return sudoku
-		}
 	}
-	findEmpty := findEmptyBox(sudoku)
-	if findEmpty[0] != -1 && findEmpty[1] != -1 {
-		return solve(sudoku)
-	} else {
-		return sudoku
-	}
-
+	//if not valid move, reset coordinate and backtrack
+	sudoku.board[xCoord][yCoord] = 0
+	return sudoku
 }
 
-func checkConditions(sudoku Sudoku, x int, y int, val int) bool {
-	for index, _ := range sudoku.board[x] {
+//checks if value is a valid move
+func validMove(sudoku Sudoku, x int, y int, val int) bool {
+	//if row is valid
+	if val == 0 {
+		return true
+	}
+	for index := range sudoku.board[x] {
 		if sudoku.board[x][index] == val && index != y {
 			return false
 		}
 	}
-	for index, _ := range sudoku.board[:][y] {
+	//if column is valid
+	for index := range sudoku.board[:][y] {
 		if sudoku.board[index][y] == val && index != x {
 			return false
 		}
 	}
+	//gets box index
 	boxIndex := findBox(sudoku, x, y)
+	//if box index is not valid, return false
 	if boxIndex == -1 {
 		return false
 	}
+	//for each value in the box
 	for i := sudoku.boxes[boxIndex][2]; i <= sudoku.boxes[boxIndex][3]; i++ {
 		for j := sudoku.boxes[boxIndex][0]; j <= sudoku.boxes[boxIndex][1]; j++ {
-			if sudoku.board[i][j] == val {
+			if sudoku.board[i][j] == val && i != x && y != j {
 				return false
 			}
 		}
@@ -84,26 +95,67 @@ func checkConditions(sudoku Sudoku, x int, y int, val int) bool {
 	return true
 }
 
+//finds box index
 func findBox(sudoku Sudoku, x int, y int) int {
 	boxes := sudoku.boxes
+	//for each box, check if in range
 	for i := 0; i < len(boxes); i++ {
 		if boxes[i][0] <= y && y <= boxes[i][1] && boxes[i][2] <= x && x <= boxes[i][3] {
 			return i
 		}
 	}
+	//if no box exists, return -1
 	return -1
 }
-func findEmptyBox(sudoku Sudoku) []int {
+
+//finds next empty box
+func findEmptyBox(sudoku Sudoku) (int, int) {
+	//for each row
 	for x, row := range sudoku.board {
-		for y, v := range row {
-			if v == 0 {
-				return []int{x, y}
+		//for each column
+		for y, box := range row {
+			if box == 0 {
+				return x, y
 			}
 		}
 	}
-	return []int{-1, -1}
+	return -1, -1
 }
 
+func isSolved(sudoku Sudoku) bool {
+	for i := 0; i < len(sudoku.board); i++ {
+		for j := 0; j < len(sudoku.board[i]); j++ {
+			if sudoku.board[i][j] == 0 {
+				return false
+			}
+		}
+	}
+	return true
+}
+func printBoard(board [9][9]int, printString string) {
+	fmt.Printf("\n	 %s\n\n", printString)
+	for row, rowList := range board {
+		if row%3 == 0 && row != 0 {
+			fmt.Print(strings.Repeat("- ", 15))
+			fmt.Print("\n")
+
+		}
+		for col, value := range rowList {
+			if col%3 == 0 && col != 0 {
+				fmt.Print("|")
+			}
+			if value == 0 {
+				fmt.Printf(" _ ")
+			} else {
+				fmt.Printf(" %d ", value)
+			}
+		}
+		fmt.Print("\n")
+	}
+	fmt.Println()
+}
+
+//Sudoku struct containing board and box locations
 type Sudoku struct {
 	board [9][9]int
 	boxes [9][4]int

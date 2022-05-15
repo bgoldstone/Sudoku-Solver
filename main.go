@@ -48,10 +48,9 @@ func solve(sudoku Sudoku) Sudoku {
 		if validMove(sudoku, xCoord, yCoord, k) {
 			sudoku.board[xCoord][yCoord] = k
 			solved := solve(sudoku)
+			//if board is solved, return solution
 			if isSolved(solved) {
 				return solved
-			} else {
-				continue
 			}
 		}
 	}
@@ -63,9 +62,6 @@ func solve(sudoku Sudoku) Sudoku {
 //checks if value is a valid move
 func validMove(sudoku Sudoku, x int, y int, val int) bool {
 	//if row is valid
-	if val == 0 {
-		return true
-	}
 	for index := range sudoku.board[x] {
 		if sudoku.board[x][index] == val && index != y {
 			return false
@@ -86,6 +82,7 @@ func validMove(sudoku Sudoku, x int, y int, val int) bool {
 	//for each value in the box
 	for i := sudoku.boxes[boxIndex][2]; i <= sudoku.boxes[boxIndex][3]; i++ {
 		for j := sudoku.boxes[boxIndex][0]; j <= sudoku.boxes[boxIndex][1]; j++ {
+			//if another value in box that is the same as the chosen value, return false
 			if sudoku.board[i][j] == val && i != x && y != j {
 				return false
 			}
@@ -114,36 +111,49 @@ func findEmptyBox(sudoku Sudoku) (int, int) {
 	for x, row := range sudoku.board {
 		//for each column
 		for y, box := range row {
+			//if box unsolved, return that
 			if box == 0 {
 				return x, y
 			}
 		}
 	}
+	//else return -1,-1 if solved
 	return -1, -1
 }
 
+//checks if sudoku is solved.
 func isSolved(sudoku Sudoku) bool {
-	for i := 0; i < len(sudoku.board); i++ {
-		for j := 0; j < len(sudoku.board[i]); j++ {
-			if sudoku.board[i][j] == 0 {
+	//for each row
+	for row := 0; row < len(sudoku.board); row++ {
+		//for each column
+		for col := 0; col < len(sudoku.board[row]); col++ {
+			if sudoku.board[row][col] == 0 {
 				return false
 			}
 		}
 	}
 	return true
 }
+
+//Prints board
 func printBoard(board [9][9]int, printString string) {
+	//Header
 	fmt.Printf("\n	 %s\n\n", printString)
+	//for each row
 	for row, rowList := range board {
+		//creates box borders
 		if row%3 == 0 && row != 0 {
 			fmt.Print(strings.Repeat("- ", 15))
 			fmt.Print("\n")
 
 		}
+		//for each column
 		for col, value := range rowList {
+			//creates box borders
 			if col%3 == 0 && col != 0 {
 				fmt.Print("|")
 			}
+			//if empty value, put '_', else print value
 			if value == 0 {
 				fmt.Printf(" _ ")
 			} else {

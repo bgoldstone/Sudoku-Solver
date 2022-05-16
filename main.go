@@ -6,12 +6,14 @@ import (
 )
 
 //col(y) start,end, row(x) start,end
-var boxes = [9][4]int{{0, 2, 0, 2}, {0, 2, 3, 5}, {0, 2, 6, 8}, {3, 5, 0, 2}, {3, 5, 3, 5}, {3, 5, 6, 8}, {6, 8, 0, 2}, {6, 8, 3, 5}, {6, 8, 6, 8}}
+var boxes = [9][4]int{
+	{0, 2, 0, 2}, {0, 2, 3, 5}, {0, 2, 6, 8},
+	{3, 5, 0, 2}, {3, 5, 3, 5}, {3, 5, 6, 8},
+	{6, 8, 0, 2}, {6, 8, 3, 5}, {6, 8, 6, 8}}
 
 func main() {
 	//initialize board
-	var board [9][9]int
-	board = [9][9]int{
+	var board = [9][9]int{
 		{3, 5, 0, 6, 0, 2, 0, 0, 4},
 		{0, 0, 7, 0, 4, 0, 0, 1, 3},
 		{0, 6, 9, 8, 3, 1, 0, 0, 7},
@@ -25,6 +27,8 @@ func main() {
 	//gets solution
 	sudoku(board)
 }
+
+//prints board and gets solution
 func sudoku(board [9][9]int) {
 	//Prints initial board
 	printBoard(&board, "Initial Board")

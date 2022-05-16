@@ -27,29 +27,29 @@ func main() {
 }
 func sudoku(board [9][9]int) {
 	//Prints initial board
-	printBoard(board, "Initial Board")
+	printBoard(&board, "Initial Board")
 	// creates an instance of a sudoku struct
 	sudoku := Sudoku{board, boxes}
 	//prints sudoku board after solving
 	solvedBoard := solve(sudoku).board
-	printBoard(solvedBoard, "Solved Board")
+	printBoard(&solvedBoard, "Solved Board")
 }
 
 //solves sudoku board using a Sudoku struct
 func solve(sudoku Sudoku) Sudoku {
 	//finds coordinates of empty box
-	xCoord, yCoord := findEmptyBox(sudoku)
+	xCoord, yCoord := findEmptyBox(&sudoku)
 	//if not empty coordinates, it solved sudoku.
 	if xCoord == -1 && yCoord == -1 {
 		return sudoku
 	}
 	//for 1-9, check if that is a valid move
 	for k := 1; k <= 9; k++ {
-		if validMove(sudoku, xCoord, yCoord, k) {
+		if validMove(&sudoku, xCoord, yCoord, k) {
 			sudoku.board[xCoord][yCoord] = k
 			solved := solve(sudoku)
 			//if board is solved, return solution
-			if isSolved(solved) {
+			if isSolved(&solved) {
 				return solved
 			}
 		}
@@ -60,7 +60,7 @@ func solve(sudoku Sudoku) Sudoku {
 }
 
 //checks if value is a valid move
-func validMove(sudoku Sudoku, x int, y int, val int) bool {
+func validMove(sudoku *Sudoku, x int, y int, val int) bool {
 	//if row is valid
 	for index := range sudoku.board[x] {
 		if sudoku.board[x][index] == val && index != y {
@@ -93,7 +93,7 @@ func validMove(sudoku Sudoku, x int, y int, val int) bool {
 }
 
 //finds box index
-func findBox(sudoku Sudoku, x int, y int) int {
+func findBox(sudoku *Sudoku, x int, y int) int {
 	boxes := sudoku.boxes
 	//for each box, check if in range
 	for i := 0; i < len(boxes); i++ {
@@ -106,7 +106,7 @@ func findBox(sudoku Sudoku, x int, y int) int {
 }
 
 //finds next empty box
-func findEmptyBox(sudoku Sudoku) (int, int) {
+func findEmptyBox(sudoku *Sudoku) (int, int) {
 	//for each row
 	for x, row := range sudoku.board {
 		//for each column
@@ -122,7 +122,7 @@ func findEmptyBox(sudoku Sudoku) (int, int) {
 }
 
 //checks if sudoku is solved.
-func isSolved(sudoku Sudoku) bool {
+func isSolved(sudoku *Sudoku) bool {
 	//for each row
 	for row := 0; row < len(sudoku.board); row++ {
 		//for each column
@@ -136,11 +136,11 @@ func isSolved(sudoku Sudoku) bool {
 }
 
 //Prints board
-func printBoard(board [9][9]int, printString string) {
+func printBoard(board *[9][9]int, printString string) {
 	//Header
 	fmt.Printf("\n	 %s\n\n", printString)
 	//for each row
-	for row, rowList := range board {
+	for row, rowList := range *board {
 		//creates box borders
 		if row%3 == 0 && row != 0 {
 			fmt.Print(strings.Repeat("- ", 15))
